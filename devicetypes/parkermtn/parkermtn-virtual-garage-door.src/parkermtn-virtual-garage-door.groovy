@@ -38,52 +38,36 @@ metadata {
 }
 
 def parse(String description) {
-	log.trace "parse($description)"
+	log.trace "parse(${description})"
 }
 
 def open() {
-    if( state.status != "open" && state.status != "opening" ) {
-        log.debug "Open"
-        state.status = "opening"
-        sendEvent(name: "door", value: "opening")
-        runIn(delay, finishOpening)
+    if( state.status == "closed" || state.status == "closing") {
+		log.debug "Requesting Open: approved"
+        SetState( "opening" )
     }
     else
-    	log.debug "Door already open"
+		log.debug "Requesting Open: denied"
 }
 
 def close() {
-	if( state.status != "closed" && state.status != "closing" ) {
-		log.debug "Close"
-    	state.status = "closing"
-    	sendEvent(name: "door", value: "closing")
-		runIn(delay, finishClosing)
+	if( state.status == "open" || state.status == "opening") {
+		log.debug "Requesting Close: approved"
+    	SetState( "closing" )
      }
      else
-     	log.debug "Door already closed"
-}
+   		log.debug "Requesting Close: denied"
 
-
-def finishOpening()
-{
-   	log.debug "Finish Opening"
-    SetState("open")
-}
-
-def finishClosing()
-{
-	log.debug "Finish Closing"
-   	SetState( "closed" )
 }
 
 def SetState( status )
 {
 	if( state.status != status )
     {
-    	log.debug "Setting Status to $status"
+	    log.debug "Changing VGD.State from ${state.status} to ${status}"
     
     	state.status = status
     	sendEvent(name: "door", value: status)
-    	sendEvent(name: "contact", value: status)
     }
 }
+
